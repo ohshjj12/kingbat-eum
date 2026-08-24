@@ -1,7 +1,15 @@
 import { useMemo, useState } from 'react';
+import type { FormEvent } from 'react';
 import { Share } from '@apps-in-toss/web-framework';
-import { categories, getTier, maxScore } from './data';
+import { CATEGORY_BONUS, categories, effectiveMaxScore, getTier } from './data';
 import './App.css';
+
+type CustomItem = {
+  id: string;
+  label: string;
+  score: number;
+  cost: number;
+};
 
 function formatWon(amount: number) {
   return amount.toLocaleString('ko-KR') + '원';
@@ -10,6 +18,10 @@ function formatWon(amount: number) {
 function App() {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [shareStatus, setShareStatus] = useState<string | null>(null);
+  const [customItems, setCustomItems] = useState<CustomItem[]>([]);
+  const [customLabel, setCustomLabel] = useState('');
+  const [customScore, setCustomScore] = useState(5);
+  const [customCost, setCustomCost] = useState('');
 
   const toggle = (id: string) => {
     setShareStatus(null);
@@ -26,24 +38,59 @@ function App() {
 
   const reset = () => {
     setSelected(new Set());
+    setCustomItems([]);
     setShareStatus(null);
   };
 
-  const { totalScore, totalCost } = useMemo(() => {
+  const addCustomItem = (event: FormEvent) => {
+    event.preventDefault();
+    const label = customLabel.trim();
+    if (!label) return;
+    const cost = Math.max(0, Number(customCost) || 0);
+    setCustomItems((prev) => [
+      ...prev,
+      { id: `custom-${Date.now()}`, label, score: customScore, cost },
+    ]);
+    setCustomLabel('');
+    setCustomScore(5);
+    setCustomCost('');
+    setShareStatus(null);
+  };
+
+  const removeCustomItem = (id: string) => {
+    setShareStatus(null);
+    setCustomItems((prev) => prev.filter((item) => item.id !== id));
+  };
+
+  const { totalScore, totalCost, comboCategoryIds } = useMemo(() => {
     let score = 0;
     let cost = 0;
+    const combos: string[] = [];
+
     for (const category of categories) {
+      let categoryChecked = 0;
       for (const item of category.items) {
         if (selected.has(item.id)) {
           score += item.score;
           cost += item.cost;
+          categoryChecked += 1;
         }
       }
+      if (categoryChecked === category.items.length) {
+        score += CATEGORY_BONUS;
+        combos.push(category.id);
+      }
     }
-    return { totalScore: score, totalCost: cost };
-  }, [selected]);
 
-  const percentage = Math.round((totalScore / maxScore) * 100);
+    for (const item of customItems) {
+      score += item.score;
+      cost += item.cost;
+    }
+
+    return { totalScore: score, totalCost: cost, comboCategoryIds: combos };
+  }, [selected, customItems]);
+
+  const percentage = Math.min(100, Math.round((totalScore / effectiveMaxScore) * 100));
   const tier = getTier(percentage);
 
   const shareText = `오늘의 킹받음 지수는 ${percentage}%!\n칭호: ${tier.emoji} ${tier.title}\n예상 홧김비용: ${formatWon(totalCost)}\n\n너의 킹받음 지수도 확인해봐 👉 킹받음 지수 계산기`;
@@ -69,41 +116,110 @@ function App() {
       </header>
 
       <main className="checklist">
-        {categories.map((category) => (
-          <section key={category.id} className="category">
-            <h2>
-              <span className="category-emoji">{category.emoji}</span>
-              {category.name}
-            </h2>
+        {categories.map((category) => {
+          const isCombo = comboCategoryIds.includes(category.id);
+          return (
+            <section key={category.id} className={`category ${isCombo ? 'combo' : ''}`}>
+              <h2>
+                <span className="category-emoji">{category.emoji}</span>
+                {category.name}
+                {isCombo && <span className="combo-badge">🎯 올킬! +{CATEGORY_BONUS}점</span>}
+              </h2>
+              <ul>
+                {category.items.map((item) => {
+                  const checked = selected.has(item.id);
+                  return (
+                    <li key={item.id}>
+                      <label className={`item ${checked ? 'checked' : ''}`}>
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          onChange={() => toggle(item.id)}
+                        />
+                        <span className="item-label">{item.label}</span>
+                        <span className="item-meta">
+                          +{item.score}점
+                          {item.cost > 0 && (
+                            <span className="item-cost">
+                              {' '}
+                              · {formatWon(item.cost)}
+                              {item.costLabel ? ` (${item.costLabel})` : ''}
+                            </span>
+                          )}
+                        </span>
+                      </label>
+                    </li>
+                  );
+                })}
+              </ul>
+            </section>
+          );
+        })}
+
+        <section className="category custom-section">
+          <h2>
+            <span className="category-emoji">✍️</span>
+            직접 입력
+          </h2>
+
+          {customItems.length > 0 && (
             <ul>
-              {category.items.map((item) => {
-                const checked = selected.has(item.id);
-                return (
-                  <li key={item.id}>
-                    <label className={`item ${checked ? 'checked' : ''}`}>
-                      <input
-                        type="checkbox"
-                        checked={checked}
-                        onChange={() => toggle(item.id)}
-                      />
-                      <span className="item-label">{item.label}</span>
-                      <span className="item-meta">
-                        +{item.score}점
-                        {item.cost > 0 && (
-                          <span className="item-cost">
-                            {' '}
-                            · {formatWon(item.cost)}
-                            {item.costLabel ? ` (${item.costLabel})` : ''}
-                          </span>
-                        )}
-                      </span>
-                    </label>
-                  </li>
-                );
-              })}
+              {customItems.map((item) => (
+                <li key={item.id}>
+                  <div className="item custom-item">
+                    <span className="item-label">{item.label}</span>
+                    <span className="item-meta">
+                      +{item.score}점
+                      {item.cost > 0 && <span className="item-cost"> · {formatWon(item.cost)}</span>}
+                    </span>
+                    <button
+                      type="button"
+                      className="custom-remove"
+                      aria-label="삭제"
+                      onClick={() => removeCustomItem(item.id)}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                </li>
+              ))}
             </ul>
-          </section>
-        ))}
+          )}
+
+          <form className="custom-form" onSubmit={addCustomItem}>
+            <input
+              type="text"
+              className="custom-input"
+              placeholder="오늘 나만 겪은 킹받는 순간을 적어보세요"
+              value={customLabel}
+              onChange={(e) => setCustomLabel(e.target.value)}
+              maxLength={40}
+            />
+            <div className="custom-form-row">
+              <label className="custom-score-label">
+                킹받음 점수 {customScore}점
+                <input
+                  type="range"
+                  min={1}
+                  max={10}
+                  value={customScore}
+                  onChange={(e) => setCustomScore(Number(e.target.value))}
+                />
+              </label>
+              <input
+                type="number"
+                className="custom-cost-input"
+                placeholder="홧김비용(원)"
+                min={0}
+                value={customCost}
+                onChange={(e) => setCustomCost(e.target.value)}
+              />
+            </div>
+            <button type="submit" className="btn-secondary custom-add-btn">
+              추가하기
+            </button>
+          </form>
+        </section>
       </main>
 
       <footer className="result">

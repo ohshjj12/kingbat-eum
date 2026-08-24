@@ -74,12 +74,48 @@ export const categories: Category[] = [
       { id: 'delivery-8', label: '무료배송 기준 채우려고 안 사도 될 거 삼', score: 5, cost: 7000, costLabel: '홧김 추가구매' },
     ],
   },
+  {
+    id: 'family',
+    name: '가족·집안일',
+    emoji: '🏠',
+    items: [
+      { id: 'family-1', label: '설거지 순번인데 모른 척', score: 6, cost: 0 },
+      { id: 'family-2', label: '택배 왔는데 나만 계속 가지러 감', score: 5, cost: 0 },
+      { id: 'family-3', label: '화장실 휴지 다 썼는데 안 채워놓음', score: 6, cost: 0 },
+      { id: 'family-4', label: '리모컨 어디 있는지 아무도 모름', score: 3, cost: 0 },
+      { id: 'family-5', label: '분리수거 날짜 깜빡해서 다음 주까지 쌓임', score: 5, cost: 0 },
+      { id: 'family-6', label: '냉장고 정리했더니 곰팡이 핀 반찬통 발견', score: 7, cost: 0 },
+      { id: 'family-7', label: '홧김에 장 보러 나갔다가 필요없는 것까지 삼', score: 6, cost: 15000, costLabel: '홧김 장보기' },
+      { id: 'family-8', label: '가족 단톡방에 나만 답장 안 했다고 등짝 스매싱', score: 4, cost: 0 },
+    ],
+  },
+  {
+    id: 'digital',
+    name: '디지털·SNS',
+    emoji: '📱',
+    items: [
+      { id: 'digital-1', label: '좋아요 안 눌러주는 애인', score: 5, cost: 0 },
+      { id: 'digital-2', label: '스토리 봤는데 답장 없음', score: 4, cost: 0 },
+      { id: 'digital-3', label: '광고 스킵 안 되는 유튜브 15초', score: 3, cost: 0 },
+      { id: 'digital-4', label: '와이파이 끊겨서 결제 화면 두 번 새로고침', score: 5, cost: 0 },
+      { id: 'digital-5', label: '핸드폰 배터리 1%인데 충전기 안 챙김', score: 6, cost: 0 },
+      { id: 'digital-6', label: '구독 무료체험 깜빡하고 자동결제 됨', score: 8, cost: 9900, costLabel: '자동결제' },
+      { id: 'digital-7', label: '택배 추적 조회했는데 3일째 그대로', score: 5, cost: 0 },
+      { id: 'digital-8', label: '인스타 알고리즘이 광고만 보여줌', score: 3, cost: 0 },
+    ],
+  },
 ];
 
 export const maxScore = categories.reduce(
   (sum, category) => sum + category.items.reduce((s, item) => s + item.score, 0),
   0,
 );
+
+export const CATEGORY_BONUS = 5;
+
+export const categoryBonusTotal = categories.length * CATEGORY_BONUS;
+
+export const effectiveMaxScore = maxScore + categoryBonusTotal;
 
 export type Tier = {
   min: number;
