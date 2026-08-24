@@ -1,7 +1,8 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 import { Share } from '@apps-in-toss/web-framework';
 import { CATEGORY_BONUS, categories, effectiveMaxScore, getTier } from './data';
+import { SHARE_CARD_HEIGHT, SHARE_CARD_WIDTH, canvasToBlob, drawShareCard } from './shareImage';
 import './App.css';
 
 type CustomItem = {
@@ -22,6 +23,7 @@ function App() {
   const [customLabel, setCustomLabel] = useState('');
   const [customScore, setCustomScore] = useState(5);
   const [customCost, setCustomCost] = useState('');
+  const shareCanvasRef = useRef<HTMLCanvasElement>(null);
 
   const toggle = (id: string) => {
     setShareStatus(null);
@@ -106,6 +108,52 @@ function App() {
         setShareStatus('공유하기를 지원하지 않는 환경이에요.');
       }
     }
+  };
+
+  useEffect(() => {
+    const canvas = shareCanvasRef.current;
+    const ctx = canvas?.getContext('2d');
+    if (!ctx) return;
+    drawShareCard(ctx, { percentage, tier, totalCost });
+  }, [percentage, tier, totalCost]);
+
+  const handleSaveImage = async () => {
+    const canvas = shareCanvasRef.current;
+    if (!canvas) return;
+    const blob = await canvasToBlob(canvas);
+    if (!blob) {
+      setShareStatus('이미지 생성에 실패했어요.');
+      return;
+    }
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'kingbat-result.png';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    setShareStatus('결과 이미지를 저장했어요.');
+  };
+
+  const handleImageShare = async () => {
+    const canvas = shareCanvasRef.current;
+    if (!canvas) return;
+    const blob = await canvasToBlob(canvas);
+    if (!blob) {
+      setShareStatus('이미지 생성에 실패했어요.');
+      return;
+    }
+    const file = new File([blob], 'kingbat-result.png', { type: 'image/png' });
+    if (typeof navigator.canShare === 'function' && navigator.canShare({ files: [file] })) {
+      try {
+        await navigator.share({ files: [file], title: '킹받음 지수 계산기', text: shareText });
+        return;
+      } catch (err) {
+        if ((err as Error)?.name === 'AbortError') return;
+      }
+    }
+    await handleSaveImage();
   };
 
   return (
@@ -219,6 +267,29 @@ function App() {
               추가하기
             </button>
           </form>
+        </section>
+
+        <section className="category share-card-section">
+          <h2>
+            <span className="category-emoji">🖼️</span>
+            공유 카드
+          </h2>
+          <div className="share-card-wrap">
+            <canvas
+              ref={shareCanvasRef}
+              width={SHARE_CARD_WIDTH}
+              height={SHARE_CARD_HEIGHT}
+              className="share-canvas"
+            />
+          </div>
+          <div className="share-card-actions">
+            <button type="button" className="btn-secondary" onClick={handleSaveImage}>
+              이미지 저장
+            </button>
+            <button type="button" className="btn-primary" onClick={handleImageShare}>
+              이미지로 공유
+            </button>
+          </div>
         </section>
       </main>
 

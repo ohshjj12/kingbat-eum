@@ -300,3 +300,22 @@
   flex: none;
   width: 100%;
 }
+
+.share-card-wrap {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 14px;
+}
+
+.share-canvas {
+  width: 100%;
+  max-width: 260px;
+  height: auto;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.share-card-actions {
+  display: flex;
+  gap: 8px;
+}
