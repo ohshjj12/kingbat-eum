@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="600" viewBox="0 0 600 600" role="img" aria-labelledby="title desc">
+  <title id="title">킹받음 지수 계산기 로고</title>
+  <desc id="desc">분노 게이지와 표정 아이콘이 있는 킹받음 지수 계산기 로고</desc>
+  <rect width="600" height="600" rx="132" fill="#F3F6FA"/>
+  <rect x="48" y="48" width="504" height="504" rx="112" fill="#FFFFFF" stroke="#E1E7EF" stroke-width="4"/>
+
+  <path d="M145 310a155 155 0 0 1 310 0" fill="none" stroke="#E5EAF0" stroke-width="34" stroke-linecap="round"/>
+  <path d="M145 310a155 155 0 0 1 202-143" fill="none" stroke="#3182F6" stroke-width="34" stroke-linecap="round"/>
+  <path d="M347 167a155 155 0 0 1 108 143" fill="none" stroke="#F04452" stroke-width="34" stroke-linecap="round"/>
+  <circle cx="300" cy="310" r="112" fill="#191F28"/>
+  <path d="m238 280 38 12M362 292l-38-12" stroke="#FFFFFF" stroke-width="15" stroke-linecap="round"/>
+  <circle cx="260" cy="320" r="11" fill="#FFFFFF"/>
+  <circle cx="340" cy="320" r="11" fill="#FFFFFF"/>
+  <path d="M257 368c24 22 62 22 86 0" fill="none" stroke="#F04452" stroke-width="13" stroke-linecap="round"/>
+  <path d="m424 99 27 44-25-3 4 35-39-58 25 3z" fill="#FFB800" stroke="#D88A00" stroke-width="7" stroke-linejoin="round"/>
+
+  <text x="300" y="118" fill="#8B95A1" font-family="Apple SD Gothic Neo, Malgun Gothic, sans-serif" font-size="23" font-weight="700" letter-spacing="3" text-anchor="middle">KINGBAT INDEX</text>
+  <text x="300" y="464" fill="#191F28" font-family="Apple SD Gothic Neo, Malgun Gothic, sans-serif" font-size="48" font-weight="800" text-anchor="middle">킹받음 지수</text>
+  <text x="300" y="505" fill="#8B95A1" font-family="Apple SD Gothic Neo, Malgun Gothic, sans-serif" font-size="22" font-weight="600" text-anchor="middle">오늘의 빡침을 숫자로</text>
+</svg>
