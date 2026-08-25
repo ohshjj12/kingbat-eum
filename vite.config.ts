@@ -7,9 +7,9 @@ import aitDevtools from "@apps-in-toss/devtools/unplugin";
 export default defineConfig({
   plugins: [aitDevtools.vite(), react()],
   server: {
-    allowedHosts: ['kingbat-eum.kpearl.net'],
+    allowedHosts: ['kingbat-eum.kpearl.net', 'api-kingbat-eum.kpearl.net'],
   },
   preview: {
-    allowedHosts: ['kingbat-eum.kpearl.net'],
+    allowedHosts: ['kingbat-eum.kpearl.net', 'api-kingbat-eum.kpearl.net'],
   },
 })
