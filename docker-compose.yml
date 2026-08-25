@@ -25,8 +25,8 @@ services:
       - ./certbot/www:/var/www/certbot:ro
       - ./certbot/conf:/etc/letsencrypt:ro
     environment:
-      DOMAIN: ${DOMAIN:?Set DOMAIN in .env}
-      API_DOMAIN: ${API_DOMAIN:?Set API_DOMAIN in .env}
+      DOMAIN: ${DOMAIN:-kingbat-eum.kpearl.net}
+      API_DOMAIN: ${API_DOMAIN:-api-kingbat-eum.kpearl.net}
       API_UPSTREAM: ${API_UPSTREAM:-http://host.docker.internal:11002}
     extra_hosts:
       - "host.docker.internal:host-gateway"
@@ -46,9 +46,9 @@ services:
       - ./certbot/www:/var/www/certbot
       - ./certbot/conf:/etc/letsencrypt
     environment:
-      DOMAIN: ${DOMAIN:?Set DOMAIN in .env}
-      API_DOMAIN: ${API_DOMAIN:?Set API_DOMAIN in .env}
-      CERTBOT_EMAIL: ${CERTBOT_EMAIL:?Set CERTBOT_EMAIL in .env}
+      DOMAIN: ${DOMAIN:-kingbat-eum.kpearl.net}
+      API_DOMAIN: ${API_DOMAIN:-api-kingbat-eum.kpearl.net}
+      CERTBOT_EMAIL: ${CERTBOT_EMAIL:-}
     entrypoint:
       - certbot
     command:
@@ -57,8 +57,8 @@ services:
       - --non-interactive
       - --agree-tos
       - --email
-      - ${CERTBOT_EMAIL:?Set CERTBOT_EMAIL in .env}
+      - ${CERTBOT_EMAIL:-}
       - -d
-      - ${DOMAIN:?Set DOMAIN in .env}
+      - ${DOMAIN:-kingbat-eum.kpearl.net}
       - -d
-      - ${API_DOMAIN:?Set API_DOMAIN in .env}
+      - ${API_DOMAIN:-api-kingbat-eum.kpearl.net}

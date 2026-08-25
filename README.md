@@ -23,7 +23,7 @@ The Docker deployment uses an nginx gateway for HTTPS. Set the real DNS names an
 
 ```bash
 cp .env.example .env
-# DOMAIN, API_DOMAIN, and CERTBOT_EMAIL 값을 실제 값으로 수정
+# CERTBOT_EMAIL을 실제 이메일로 수정
 ```
 
 The `A` records for both names must point to this server, and ports 80 and 443 must be open. Issue the first certificate while the web gateway is stopped:
