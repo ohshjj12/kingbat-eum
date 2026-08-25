@@ -342,8 +342,19 @@
   gap: 14px;
 }
 
+.select-status-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.select-count {
+  font-size: 13px;
+  font-weight: 700;
+  color: #4e5968;
+}
+
 .select-all-btn {
-  align-self: flex-end;
   border: none;
   background: #eef0f2;
   color: #4e5968;
@@ -352,6 +363,11 @@
   padding: 8px 14px;
   border-radius: 999px;
   cursor: pointer;
+}
+
+.select-all-btn:disabled {
+  color: #b0b8c1;
+  cursor: not-allowed;
 }
 
 .category-select-grid {
@@ -378,6 +394,11 @@
 .category-select-card.selected {
   border-color: #3182f6;
   background: #eef6ff;
+}
+
+.category-select-card.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
 .category-select-check {

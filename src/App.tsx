@@ -12,15 +12,15 @@ type CustomItem = {
   cost: number;
 };
 
+const MAX_CATEGORY_SELECTION = 2;
+
 function formatWon(amount: number) {
   return amount.toLocaleString('ko-KR') + '원';
 }
 
 function App() {
   const [step, setStep] = useState<'select' | 'checklist'>('select');
-  const [selectedCategoryIds, setSelectedCategoryIds] = useState<Set<string>>(
-    () => new Set(categories.map((category) => category.id)),
-  );
+  const [selectedCategoryIds, setSelectedCategoryIds] = useState<Set<string>>(new Set());
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [shareStatus, setShareStatus] = useState<string | null>(null);
   const [customItems, setCustomItems] = useState<CustomItem[]>([]);
@@ -35,17 +35,14 @@ function App() {
       if (next.has(id)) {
         next.delete(id);
       } else {
+        if (next.size >= MAX_CATEGORY_SELECTION) return prev;
         next.add(id);
       }
       return next;
     });
   };
 
-  const toggleAllCategories = () => {
-    setSelectedCategoryIds((prev) =>
-      prev.size === categories.length ? new Set() : new Set(categories.map((category) => category.id)),
-    );
-  };
+  const clearCategorySelection = () => setSelectedCategoryIds(new Set());
 
   const filteredCategories = useMemo(
     () => categories.filter((category) => selectedCategoryIds.has(category.id)),
@@ -192,27 +189,39 @@ function App() {
   };
 
   if (step === 'select') {
-    const allSelected = selectedCategoryIds.size === categories.length;
+    const isMaxReached = selectedCategoryIds.size >= MAX_CATEGORY_SELECTION;
     return (
       <div className="page">
         <header className="header">
           <h1>킹받음 지수 계산기</h1>
-          <p>오늘 체크할 카테고리를 골라보세요</p>
+          <p>오늘 체크할 카테고리를 최대 {MAX_CATEGORY_SELECTION}개 골라보세요</p>
         </header>
 
         <main className="category-select">
-          <button type="button" className="select-all-btn" onClick={toggleAllCategories}>
-            {allSelected ? '전체 해제' : '전체 선택'}
-          </button>
+          <div className="select-status-row">
+            <span className="select-count">
+              {selectedCategoryIds.size} / {MAX_CATEGORY_SELECTION} 선택됨
+            </span>
+            <button
+              type="button"
+              className="select-all-btn"
+              onClick={clearCategorySelection}
+              disabled={selectedCategoryIds.size === 0}
+            >
+              선택 초기화
+            </button>
+          </div>
           <div className="category-select-grid">
             {categories.map((category) => {
               const isSelected = selectedCategoryIds.has(category.id);
+              const isDisabled = !isSelected && isMaxReached;
               return (
                 <button
                   type="button"
                   key={category.id}
-                  className={`category-select-card ${isSelected ? 'selected' : ''}`}
+                  className={`category-select-card ${isSelected ? 'selected' : ''} ${isDisabled ? 'disabled' : ''}`}
                   onClick={() => toggleCategory(category.id)}
+                  disabled={isDisabled}
                 >
                   {isSelected && <span className="category-select-check">✓</span>}
                   <span className="category-select-emoji">{category.emoji}</span>
