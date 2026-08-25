@@ -1,6 +1,13 @@
 services:
+  frontend-app:
+    build:
+      context: .
+      target: builder
+    working_dir: /app
   app:
-    build: .
+    build:
+      context: .
+      target: runtime
     ports:
       - "10001:80"
     restart: unless-stopped
