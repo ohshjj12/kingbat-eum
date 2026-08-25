@@ -19,26 +19,14 @@ After the build, copy the generated `.ait` file from the container and upload it
 
 ## HTTPS deployment
 
-The Docker deployment uses an nginx gateway for HTTPS. Set the real DNS names and the email used by Let's Encrypt in `.env`:
+HTTPS and certificates are managed by the host nginx/Certbot. This Compose stack only serves the frontend on `127.0.0.1:10001`; configure the host nginx for these upstreams:
 
-```bash
-cp .env.example .env
-# CERTBOT_EMAIL을 실제 이메일로 수정
+```text
+kingbat-eum.kpearl.net       -> http://127.0.0.1:10001
+api-kingbat-eum.kpearl.net  -> your API service on port 11002
 ```
 
-The `A` records for both names must point to this server, and ports 80 and 443 must be open. Issue the first certificate while the web gateway is stopped:
-
-```bash
-docker compose --profile certbot run --rm --service-ports certbot
-docker compose up -d --build
-```
-
-The certificate covers both `DOMAIN` and `API_DOMAIN`. The frontend is served at `DOMAIN`, while `API_DOMAIN` is proxied to `API_UPSTREAM` (default: `http://host.docker.internal:11002`). Renew certificates periodically on the host:
-
-```bash
-docker compose --profile certbot run --rm certbot renew --webroot -w /var/www/certbot
-docker compose restart web
-```
+Keep ports 80 and 443 on the host nginx. The Docker app does not bind either port.
 
 Currently, two official plugins are available:
 
