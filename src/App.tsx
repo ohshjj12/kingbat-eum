@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 import { Share } from '@apps-in-toss/web-framework';
-import { CATEGORY_BONUS, categories, effectiveMaxScore, getTier } from './data';
+import { CATEGORY_BONUS, categories, getTier } from './data';
 import { SHARE_CARD_HEIGHT, SHARE_CARD_WIDTH, canvasToBlob, drawShareCard } from './shareImage';
 import './App.css';
 
@@ -17,6 +17,10 @@ function formatWon(amount: number) {
 }
 
 function App() {
+  const [step, setStep] = useState<'select' | 'checklist'>('select');
+  const [selectedCategoryIds, setSelectedCategoryIds] = useState<Set<string>>(
+    () => new Set(categories.map((category) => category.id)),
+  );
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [shareStatus, setShareStatus] = useState<string | null>(null);
   const [customItems, setCustomItems] = useState<CustomItem[]>([]);
@@ -24,6 +28,29 @@ function App() {
   const [customScore, setCustomScore] = useState(5);
   const [customCost, setCustomCost] = useState('');
   const shareCanvasRef = useRef<HTMLCanvasElement>(null);
+
+  const toggleCategory = (id: string) => {
+    setSelectedCategoryIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  const toggleAllCategories = () => {
+    setSelectedCategoryIds((prev) =>
+      prev.size === categories.length ? new Set() : new Set(categories.map((category) => category.id)),
+    );
+  };
+
+  const filteredCategories = useMemo(
+    () => categories.filter((category) => selectedCategoryIds.has(category.id)),
+    [selectedCategoryIds],
+  );
 
   const toggle = (id: string) => {
     setShareStatus(null);
@@ -64,14 +91,16 @@ function App() {
     setCustomItems((prev) => prev.filter((item) => item.id !== id));
   };
 
-  const { totalScore, totalCost, comboCategoryIds } = useMemo(() => {
+  const { totalScore, totalCost, comboCategoryIds, effectiveMaxScore } = useMemo(() => {
     let score = 0;
     let cost = 0;
+    let itemsMax = 0;
     const combos: string[] = [];
 
-    for (const category of categories) {
+    for (const category of filteredCategories) {
       let categoryChecked = 0;
       for (const item of category.items) {
+        itemsMax += item.score;
         if (selected.has(item.id)) {
           score += item.score;
           cost += item.cost;
@@ -89,10 +118,16 @@ function App() {
       cost += item.cost;
     }
 
-    return { totalScore: score, totalCost: cost, comboCategoryIds: combos };
-  }, [selected, customItems]);
+    return {
+      totalScore: score,
+      totalCost: cost,
+      comboCategoryIds: combos,
+      effectiveMaxScore: itemsMax + filteredCategories.length * CATEGORY_BONUS,
+    };
+  }, [filteredCategories, selected, customItems]);
 
-  const percentage = Math.min(100, Math.round((totalScore / effectiveMaxScore) * 100));
+  const percentage =
+    effectiveMaxScore > 0 ? Math.min(100, Math.round((totalScore / effectiveMaxScore) * 100)) : 0;
   const tier = getTier(percentage);
 
   const shareText = `오늘의 킹받음 지수는 ${percentage}%!\n칭호: ${tier.emoji} ${tier.title}\n예상 홧김비용: ${formatWon(totalCost)}\n\n너의 킹받음 지수도 확인해봐 👉 킹받음 지수 계산기`;
@@ -156,15 +191,67 @@ function App() {
     await handleSaveImage();
   };
 
+  if (step === 'select') {
+    const allSelected = selectedCategoryIds.size === categories.length;
+    return (
+      <div className="page">
+        <header className="header">
+          <h1>킹받음 지수 계산기</h1>
+          <p>오늘 체크할 카테고리를 골라보세요</p>
+        </header>
+
+        <main className="category-select">
+          <button type="button" className="select-all-btn" onClick={toggleAllCategories}>
+            {allSelected ? '전체 해제' : '전체 선택'}
+          </button>
+          <div className="category-select-grid">
+            {categories.map((category) => {
+              const isSelected = selectedCategoryIds.has(category.id);
+              return (
+                <button
+                  type="button"
+                  key={category.id}
+                  className={`category-select-card ${isSelected ? 'selected' : ''}`}
+                  onClick={() => toggleCategory(category.id)}
+                >
+                  {isSelected && <span className="category-select-check">✓</span>}
+                  <span className="category-select-emoji">{category.emoji}</span>
+                  <span className="category-select-name">{category.name}</span>
+                  <span className="category-select-count">{category.items.length}개 항목</span>
+                </button>
+              );
+            })}
+          </div>
+        </main>
+
+        <footer className="select-footer">
+          <button
+            type="button"
+            className="btn-primary select-start-btn"
+            disabled={selectedCategoryIds.size === 0}
+            onClick={() => setStep('checklist')}
+          >
+            {selectedCategoryIds.size === 0
+              ? '카테고리를 선택해주세요'
+              : `${selectedCategoryIds.size}개 카테고리로 시작하기`}
+          </button>
+        </footer>
+      </div>
+    );
+  }
+
   return (
     <div className="page">
       <header className="header">
+        <button type="button" className="back-btn" onClick={() => setStep('select')}>
+          ← 카테고리 다시 선택
+        </button>
         <h1>킹받음 지수 계산기</h1>
         <p>오늘 겪은 킹받는 순간을 체크해보세요</p>
       </header>
 
       <main className="checklist">
-        {categories.map((category) => {
+        {filteredCategories.map((category) => {
           const isCombo = comboCategoryIds.includes(category.id);
           return (
             <section key={category.id} className={`category ${isCombo ? 'combo' : ''}`}>
