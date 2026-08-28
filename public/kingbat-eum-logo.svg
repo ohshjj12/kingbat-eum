@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="600" height="600" viewBox="0 0 600 600" role="img" aria-labelledby="title desc">
   <title id="title">킹받음 지수 계산기 로고</title>
   <desc id="desc">분노 게이지와 표정 아이콘이 있는 킹받음 지수 계산기 로고</desc>
-  <rect width="600" height="600" rx="132" fill="#F3F6FA"/>
+  <rect width="600" height="600" fill="#F3F6FA"/>
   <rect x="48" y="48" width="504" height="504" rx="112" fill="#FFFFFF" stroke="#E1E7EF" stroke-width="4"/>
 
   <path d="M145 310a155 155 0 0 1 310 0" fill="none" stroke="#E5EAF0" stroke-width="34" stroke-linecap="round"/>
